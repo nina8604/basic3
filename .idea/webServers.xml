@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="f83b2fb8-8df8-42d8-8c3c-6acb0902db01" name="jfsw3-wordpress" url="http://nina-iaremenko-JFSW3-WordPress.dev-test.pro">
+        <fileTransfer host="nina-iaremenko-JFSW3-WordPress.dev-test.pro" port="22" rootFolder="/var/www/html/bedrock" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
