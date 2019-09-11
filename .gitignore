@@ -1,3 +1,4 @@
+.idea
 # Application
 web/app/plugins/*
 !web/app/plugins/.gitkeep

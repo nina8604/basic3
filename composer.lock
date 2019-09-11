@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d04f813a8f0d4de3f15ee24d12211b15",
+    "content-hash": "cb1d4775623f0b540fbc2fc544179cb3",
     "packages": [
         {
             "name": "composer/installers",
@@ -527,6 +527,24 @@
                 "environment"
             ],
             "time": "2019-08-27T17:00:38+00:00"
+        },
+        {
+            "name": "wpackagist-plugin/popup-maker",
+            "version": "1.8.11",
+            "source": {
+                "type": "svn",
+                "url": "https://plugins.svn.wordpress.org/popup-maker/",
+                "reference": "tags/1.8.11"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://downloads.wordpress.org/plugin/popup-maker.1.8.11.zip"
+            },
+            "require": {
+                "composer/installers": "~1.0"
+            },
+            "type": "wordpress-plugin",
+            "homepage": "https://wordpress.org/plugins/popup-maker/"
         },
         {
             "name": "wpackagist-plugin/woocommerce",
