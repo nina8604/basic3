@@ -32,9 +32,7 @@ if ( post_password_required() ) {
 }
 ?>
 <div id="product-<?php the_ID(); ?>" <?php wc_product_class( '', $product ); ?>>
-<!--    --><?php //$id = $product->get_id(); ?>
-<!--    <input type="hidden" value="--><?php //echo $id ?><!--" class="product_id">-->
-<!--    <input type="hidden" value="1" class="product_quantity">-->
+
 
 	<?php
 	/**
@@ -47,6 +45,9 @@ if ( post_password_required() ) {
 	?>
 
 	<div class="summary entry-summary">
+<!--        --><?php //$id = $product->get_id(); ?>
+<!--        <input type="hidden" value="--><?php //echo $id ?><!--" class="product_id">-->
+<!--        <input type="hidden" value="1" class="product_quantity">-->
 
 		<?php
 		/**
