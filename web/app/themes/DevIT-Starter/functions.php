@@ -5,6 +5,7 @@ function registerStyles()
 //    wp_enqueue_style('icons_style', 'https://use.fontawesome.com/releases/v5.9.0/css/all.css', array(), '1.1.0');
 //    wp_enqueue_style('icons_style', 'https://use.fontawesome.com/releases/v5.9.0/css/v4-shims.css', array(), '1.1.0');
 //    wp_enqueue_style('main_style', get_stylesheet_directory_uri() . '/src/css/main.css', array(), '1.0.0');
+    wp_enqueue_style('jquery_ui_style', get_stylesheet_directory_uri() . '/src/css/jquery-ui.css', array(), '1.1.0');
 }
 add_action('wp_enqueue_scripts', 'registerStyles');
 
@@ -12,9 +13,8 @@ add_action('wp_enqueue_scripts', 'registerStyles');
 function enqueue_scripts()
 {
 
-
     wp_enqueue_script('theme_scripts', get_stylesheet_directory_uri() . '/src/js/main.js', array('jquery'), '1.1.0', true);
-
+    wp_enqueue_script('jquery_ui_scripts', get_stylesheet_directory_uri() . '/src/js/jquery-ui.js', array('jquery'), '1.1.0', true);
 }
 add_action('wp_enqueue_scripts', 'enqueue_scripts');
 
@@ -123,4 +123,69 @@ function show_message_1() {
 
 // add shortcode
 add_shortcode ('message_add_to_cart', 'show_message_1');
+
+// color and size filter
+if (wp_doing_ajax()) {
+    add_action('wp_ajax_choose_color_size_filter', 'choose_color_size_filter');
+    add_action('wp_ajax_nopriv_choose_color_size_filter', 'choose_color_size_filter');
+}
+function choose_color_size_filter()
+{
+    $url = $_POST['url'];
+//    var_dump($url);
+    $query = parse_url($url, PHP_URL_QUERY);
+    var_dump($query);
+    parse_str($query, $filters);
+//    var_dump($filters);
+    $args = array(
+        'post_status' => 'publish',
+        'post_type' => 'product',
+        'posts_per_page' => 6,
+        'tax_query' => [
+            'relation' => 'OR',
+            [
+                'relation' => 'AND',
+                [
+                    'taxonomy' => 'pa_color',
+                    'field'    => 'slug',
+                    'terms'    => [ $filters['filter_color'] ]
+                ],
+                [
+                    'taxonomy' => 'pa_size',
+                    'field'    => 'slug',
+                    'terms'    => $filters['filter_size']
+                ]
+            ],
+            [
+                [
+                    'taxonomy' => 'pa_color',
+                    'field'    => 'slug',
+                    'terms'    => [ $filters['filter_color'] ]
+                ]
+            ],
+            [
+                [
+                    'taxonomy' => 'pa_size',
+                    'field'    => 'slug',
+                    'terms'    => $filters['filter_size']
+                ]
+            ],
+        ]
+    );
+    $products = new WP_Query($args);
+//    echo "<pre>";
+//    var_dump($products->posts);
+    while ($products->have_posts()) {
+        $products->the_post();
+        /**
+         * Hook: woocommerce_shop_loop.
+         *
+         * @hooked WC_Structured_Data::generate_product_data() - 10
+         */
+        do_action('woocommerce_shop_loop');
+
+        wc_get_template_part('content', 'product');
+    }
+    wp_die();
+}
 
