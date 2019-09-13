@@ -11,14 +11,12 @@ add_action('wp_enqueue_scripts', 'registerStyles');
 // add scripts
 function enqueue_scripts()
 {
-    //wp_enqueue_script('jquery');
+
 
     wp_enqueue_script('theme_scripts', get_stylesheet_directory_uri() . '/src/js/main.js', array('jquery'), '1.1.0', true);
-//    wp_enqueue_script('jquery_ui_scripts', get_stylesheet_directory_uri() . '/src/js/jquery-ui.js', array('jquery'), '1.1.0', true);
 
 }
 add_action('wp_enqueue_scripts', 'enqueue_scripts');
-
 
 add_action( 'wp_enqueue_scripts', 'myajax_data', 99 );
 function myajax_data(){
@@ -119,7 +117,7 @@ add_action('wp_ajax_nopriv_crispshop_add_cart_single', 'crispshop_add_cart_singl
 function show_message_1() {
     $productName = get_the_title();
     $span = '<span id="m-quantity"></span>';
-    $message = " $productName add to the cart - $span";
+    $message = " $productName added to the cart - $span item(s)";
     echo $message;
 }
 
