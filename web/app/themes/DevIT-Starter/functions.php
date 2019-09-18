@@ -17,6 +17,7 @@ function enqueue_scripts()
     wp_enqueue_script('jquery_ui_scripts', get_stylesheet_directory_uri() . '/src/js/jquery-ui.js', array('jquery'), '1.1.0', true);
 }
 add_action('wp_enqueue_scripts', 'enqueue_scripts');
+add_theme_support( 'woocommerce' );
 
 add_action( 'wp_enqueue_scripts', 'myajax_data', 99 );
 function myajax_data(){
@@ -131,47 +132,70 @@ if (wp_doing_ajax()) {
 }
 function choose_color_size_filter()
 {
+//    $colors = $_POST['color'];
+//    var_dump($colors);
+//    $filter_color = [];
+//    foreach ($colors as $color => $value){
+//        if ($value == 'true') {
+//            $filter_color[] = $color;
+//        }
+//    }
+//    var_dump($filter_color);
+//
+//
+//
+//    die;
     $url = $_POST['url'];
 //    var_dump($url);
     $query = parse_url($url, PHP_URL_QUERY);
-    var_dump($query);
-    parse_str($query, $filters);
+//    var_dump($query);
+    if ($query == NULL) {
+        $args = array (
+            'post_status' => 'publish',
+            'post_type' => 'product',
+            'posts_per_page' => 16,
+        );
+    }else {
+        parse_str($query, $filters);
 //    var_dump($filters);
-    $args = array(
-        'post_status' => 'publish',
-        'post_type' => 'product',
-        'posts_per_page' => 6,
-        'tax_query' => [
-            'relation' => 'OR',
-            [
-                'relation' => 'AND',
+
+        $args = array(
+            'post_status' => 'publish',
+            'post_type' => 'product',
+            'posts_per_page' => 6,
+            'tax_query' => [
+                'relation' => 'OR',
                 [
-                    'taxonomy' => 'pa_color',
-                    'field'    => 'slug',
-                    'terms'    => [ $filters['filter_color'] ]
+                    'relation' => 'AND',
+                    [
+                        'taxonomy' => 'pa_color',
+                        'field'    => 'slug',
+                        'terms'    => [ $filters['filter_color'] ]
+                    ],
+                    [
+                        'taxonomy' => 'pa_size',
+                        'field'    => 'slug',
+                        'terms'    => $filters['filter_size']
+                    ]
                 ],
                 [
-                    'taxonomy' => 'pa_size',
-                    'field'    => 'slug',
-                    'terms'    => $filters['filter_size']
-                ]
-            ],
-            [
+                    [
+                        'taxonomy' => 'pa_color',
+                        'field'    => 'slug',
+                        'terms'    => [ $filters['filter_color'] ]
+                    ]
+                ],
                 [
-                    'taxonomy' => 'pa_color',
-                    'field'    => 'slug',
-                    'terms'    => [ $filters['filter_color'] ]
-                ]
-            ],
-            [
-                [
-                    'taxonomy' => 'pa_size',
-                    'field'    => 'slug',
-                    'terms'    => $filters['filter_size']
-                ]
-            ],
-        ]
-    );
+                    [
+                        'taxonomy' => 'pa_size',
+                        'field'    => 'slug',
+                        'terms'    => $filters['filter_size']
+                    ]
+                ],
+            ]
+        );
+    }
+
     $products = new WP_Query($args);
 //    echo "<pre>";
 //    var_dump($products->posts);
@@ -232,12 +256,14 @@ if (wp_doing_ajax()) {
 }
 function choose_any_filter()
 {
+
     $url = $_POST['url'];
 //    var_dump($url);
     $query = parse_url($url, PHP_URL_QUERY);
 //    var_dump($query);
     parse_str($query, $filters);
     var_dump($filters);
+    die;
 //    $args = array(
 //        'post_status' => 'publish',
 //        'post_type' => 'product',
@@ -245,7 +271,7 @@ function choose_any_filter()
 //        'meta_query' => array(
 //            array(
 //                'key' => '_price',
-//                'value' => array($filters['range_min'], $filters['range_max']),
+//                'value' => array($filters['min_price'], $filters['max_price']),
 //                'compare' => 'BETWEEN',
 //                'type' => 'NUMERIC'
 //            ),
