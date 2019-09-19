@@ -12,8 +12,8 @@ add_action('wp_enqueue_scripts', 'registerStyles');
 // add scripts
 function enqueue_scripts()
 {
-
-    wp_enqueue_script('theme_scripts', get_stylesheet_directory_uri() . '/src/js/main.js', array('jquery'), '1.1.0', true);
+    wp_enqueue_script('theme_scripts', get_stylesheet_directory_uri() . '/src/js/main.js', array('jquery', 'filter_scripts'), '1.1.0', true);
+    wp_enqueue_script('filter_scripts', get_stylesheet_directory_uri() . '/src/js/Filters.js', array('jquery'), '1.1.0', true);
     wp_enqueue_script('jquery_ui_scripts', get_stylesheet_directory_uri() . '/src/js/jquery-ui.js', array('jquery'), '1.1.0', true);
 }
 add_action('wp_enqueue_scripts', 'enqueue_scripts');
@@ -125,80 +125,73 @@ function show_message_1() {
 // add shortcode
 add_shortcode ('message_add_to_cart', 'show_message_1');
 
-// color and size filter
 if (wp_doing_ajax()) {
-    add_action('wp_ajax_choose_color_size_filter', 'choose_color_size_filter');
-    add_action('wp_ajax_nopriv_choose_color_size_filter', 'choose_color_size_filter');
+    add_action('wp_ajax_choose_filters', 'choose_filters');
+    add_action('wp_ajax_nopriv_choose_filters', 'choose_filters');
 }
-function choose_color_size_filter()
+function choose_filters()
 {
-//    $colors = $_POST['color'];
-//    var_dump($colors);
-//    $filter_color = [];
-//    foreach ($colors as $color => $value){
-//        if ($value == 'true') {
-//            $filter_color[] = $color;
-//        }
-//    }
-//    var_dump($filter_color);
-//
-//
-//
-//    die;
     $url = $_POST['url'];
-//    var_dump($url);
     $query = parse_url($url, PHP_URL_QUERY);
-//    var_dump($query);
     if ($query == NULL) {
-        $args = array (
+        $args = [
             'post_status' => 'publish',
             'post_type' => 'product',
             'posts_per_page' => 16,
-        );
+        ];
     }else {
         parse_str($query, $filters);
-//    var_dump($filters);
-
-        $args = array(
+        $args = [
             'post_status' => 'publish',
             'post_type' => 'product',
-            'posts_per_page' => 6,
-            'tax_query' => [
+            'posts_per_page' => 16,
+        ];
+        if (array_key_exists('min_price', $filters)) {
+            $args['meta_query'] = [
+                [
+                    'key' => '_price',
+                    'value' => array($filters['min_price'], $filters['max_price']),
+                    'compare' => 'BETWEEN',
+                    'type' => 'NUMERIC'
+                ],
+            ];
+        }
+        if ((array_key_exists('filter_color', $filters) & array_key_exists('filter_size', $filters)) || (array_key_exists('filter_color', $filters) & !array_key_exists('filter_size', $filters)) || (!array_key_exists('filter_color', $filters) & array_key_exists('filter_size', $filters))) {
+            $filterColor = explode(',', $filters['filter_color']);
+            $filterSize = explode(',', $filters['filter_size']);
+            $args['tax_query'] = [
                 'relation' => 'OR',
                 [
                     'relation' => 'AND',
                     [
                         'taxonomy' => 'pa_color',
                         'field'    => 'slug',
-                        'terms'    => [ $filters['filter_color'] ]
+                        'terms'    => $filterColor
                     ],
                     [
                         'taxonomy' => 'pa_size',
                         'field'    => 'slug',
-                        'terms'    => $filters['filter_size']
+                        'terms'    => $filterSize
                     ]
                 ],
                 [
                     [
                         'taxonomy' => 'pa_color',
                         'field'    => 'slug',
-                        'terms'    => [ $filters['filter_color'] ]
+                        'terms'    => $filterColor
                     ]
                 ],
                 [
                     [
                         'taxonomy' => 'pa_size',
                         'field'    => 'slug',
-                        'terms'    => $filters['filter_size']
+                        'terms'    => $filterSize
                     ]
                 ],
-            ]
-        );
+            ];
+        }
     }
-
     $products = new WP_Query($args);
-//    echo "<pre>";
-//    var_dump($products->posts);
     while ($products->have_posts()) {
         $products->the_post();
         /**
@@ -211,117 +204,6 @@ function choose_color_size_filter()
         wc_get_template_part('content', 'product');
     }
     wp_die();
-}
-
-// price range filter
-if (wp_doing_ajax()) {
-    add_action('wp_ajax_choose_price_range', 'choose_price_range');
-    add_action('wp_ajax_nopriv_choose_price_range', 'choose_price_range');
-}
-function choose_price_range()
-{
-    $args = array(
-        'post_status' => 'publish',
-        'post_type' => 'product',
-        'posts_per_page' => 6,
-        'meta_query' => array(
-            array(
-                'key' => '_price',
-                'value' => array($_POST['range_min'], $_POST['range_max']),
-                'compare' => 'BETWEEN',
-                'type' => 'NUMERIC'
-            )
-        )
-    );
-    $products = new WP_Query($args);
-//    echo "<pre>";
-//    var_dump($products);
-    while ($products->have_posts()) {
-        $products->the_post();
-        /**
-         * Hook: woocommerce_shop_loop.
-         *
-         * @hooked WC_Structured_Data::generate_product_data() - 10
-         */
-        do_action('woocommerce_shop_loop');
-
-        wc_get_template_part('content', 'product');
-    }
-    wp_die();
-}
-
-if (wp_doing_ajax()) {
-    add_action('wp_ajax_choose_any_filter', 'choose_any_filter');
-    add_action('wp_ajax_nopriv_choose_any_filter', 'choose_any_filter');
-}
-function choose_any_filter()
-{
-
-    $url = $_POST['url'];
-//    var_dump($url);
-    $query = parse_url($url, PHP_URL_QUERY);
-//    var_dump($query);
-    parse_str($query, $filters);
-    var_dump($filters);
-    die;
-//    $args = array(
-//        'post_status' => 'publish',
-//        'post_type' => 'product',
-//        'posts_per_page' => 6,
-//        'meta_query' => array(
-//            array(
-//                'key' => '_price',
-//                'value' => array($filters['min_price'], $filters['max_price']),
-//                'compare' => 'BETWEEN',
-//                'type' => 'NUMERIC'
-//            ),
-//        ),
-//        'tax_query' => [
-//            'relation' => 'OR',
-//            [
-//                'relation' => 'AND',
-//                [
-//                    'taxonomy' => 'pa_color',
-//                    'field'    => 'slug',
-//                    'terms'    => [ $filters['filter_color'] ]
-//                ],
-//                [
-//                    'taxonomy' => 'pa_size',
-//                    'field'    => 'slug',
-//                    'terms'    => $filters['filter_size']
-//                ]
-//            ],
-//            [
-//                [
-//                    'taxonomy' => 'pa_color',
-//                    'field'    => 'slug',
-//                    'terms'    => [ $filters['filter_color'] ]
-//                ]
-//            ],
-//            [
-//                [
-//                    'taxonomy' => 'pa_size',
-//                    'field'    => 'slug',
-//                    'terms'    => $filters['filter_size']
-//                ]
-//            ],
-//        ]
-//    );
-//    $products = new WP_Query($args);
-////    echo "<pre>";
-////    var_dump($products->posts);
-//    while ($products->have_posts()) {
-//        $products->the_post();
-//        /**
-//         * Hook: woocommerce_shop_loop.
-//         *
-//         * @hooked WC_Structured_Data::generate_product_data() - 10
-//         */
-//        do_action('woocommerce_shop_loop');
-//
-//        wc_get_template_part('content', 'product');
-//    }
-//    wp_die();
 }
 
 
